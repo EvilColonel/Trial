@@ -1,13 +1,821 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=<>, initial-scale=1.0">
-    <title>Document</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELate — Crack the pattern behind every placement.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12182B;
+    --ink-soft:#3B4256;
+    --paper:#F6F4EE;
+    --paper-raised:#FFFFFF;
+    --line:#E1DDD1;
+    --blue:#4C5FA5;
+    --blue-deep:#2E3B72;
+    --amber:#D89A3E;
+    --amber-soft:#F3E3C6;
+    --good:#3E7D5C;
+    --good-soft:#DCEAE1;
+    --attn:#B15E3B;
+    --attn-soft:#F1DCCE;
+    --radius:14px;
+    --shadow: 0 1px 2px rgba(18,24,43,0.04), 0 8px 24px rgba(18,24,43,0.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces',serif;
+    color:var(--ink);
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .mono{
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:0.02em;
+  }
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
+  .view{display:none;}
+  .view.active{display:block; animation: fadein .5s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  .wrap{max-width:1120px; margin:0 auto; padding:0 32px;}
+
+  /* NAVBAR */
+  .nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(246,244,238,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1120px; margin:0 auto; padding:18px 32px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo{
+    font-family:'Fraunces',serif; font-weight:600; font-size:22px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .logo-mark{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 0 4px var(--amber-soft);
+  }
+  .nav-links{display:flex; align-items:center; gap:32px; font-size:14px; color:var(--ink-soft);}
+  .nav-links a:hover{color:var(--ink);}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:11px 20px; border-radius:999px;
+    font-size:14px; font-weight:600;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn-primary{
+    background:var(--ink); color:var(--paper-raised);
+  }
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(18,24,43,0.25);}
+  .btn-ghost{
+    border:1px solid var(--line); color:var(--ink);
+  }
+  .btn-ghost:hover{border-color:var(--ink);}
+  .btn-block{width:100%; justify-content:center; padding:15px 20px; font-size:15px; border-radius:12px;}
+
+  /* HERO */
+  .hero{
+    padding:88px 0 64px;
+  }
+  .hero-grid{
+    display:grid; grid-template-columns:1.05fr 0.95fr; gap:56px; align-items:center;
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:500;
+    color:var(--blue-deep); background:#EDEFF8; border:1px solid #D9DDF0;
+    padding:6px 12px; border-radius:999px; margin-bottom:22px;
+  }
+  .hero h1{
+    font-size:52px; line-height:1.06; font-weight:600;
+  }
+  .hero .sub{
+    font-family:'Fraunces',serif; font-weight:500; font-style:italic;
+    font-size:24px; color:var(--blue-deep); margin-top:16px;
+  }
+  .hero p.desc{
+    font-size:16px; line-height:1.65; color:var(--ink-soft);
+    max-width:480px; margin-top:20px;
+  }
+  .hero-cta{margin-top:32px; display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
+  .hero-note{font-size:13px; color:var(--ink-soft); font-style:italic; font-family:'Fraunces',serif;}
+
+  /* PATTERN VISUAL */
+  .pattern-stage{
+    position:relative; height:420px;
+  }
+  .pattern-svg{position:absolute; inset:0; width:100%; height:100%;}
+  .pattern-svg line{
+    stroke:#C7CCE0; stroke-width:1.4; stroke-dasharray:4 4;
+    opacity:0; animation:drawline 1s ease forwards;
+  }
+  @keyframes drawline{to{opacity:1;}}
+  .chip{
+    position:absolute;
+    background:var(--paper-raised); border:1px solid var(--line);
+    border-radius:10px; padding:8px 14px;
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:500;
+    color:var(--ink-soft); box-shadow:var(--shadow);
+    opacity:0; transform:scale(.85);
+    animation:chipin .6s cubic-bezier(.2,.8,.3,1) forwards;
+    transition:transform .2s ease, border-color .2s ease;
+  }
+  .chip:hover{transform:scale(1.06); border-color:var(--blue); color:var(--ink);}
+  @keyframes chipin{to{opacity:1; transform:scale(1);}}
+  .pattern-center{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    background:var(--ink); color:var(--paper);
+    border-radius:12px; padding:20px 26px;
+    text-align:center;
+    box-shadow:0 12px 32px rgba(18,24,43,0.28);
+    opacity:0; animation:centerin .7s ease .9s forwards;
+  }
+  @keyframes centerin{to{opacity:1;}}
+  .pattern-center .label{font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:0.14em; color:var(--amber); text-transform:uppercase;}
+  .pattern-center .title{font-family:'Fraunces',serif; font-size:18px; font-weight:600; margin-top:6px;}
+
+  /* SECTION shared */
+  section{padding:72px 0;}
+  .section-head{max-width:640px; margin-bottom:44px;}
+  .section-head .kicker{
+    font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--blue-deep);
+    text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; display:block;
+  }
+  .section-head h2{font-size:34px; font-weight:600; line-height:1.18;}
+  .section-head p{color:var(--ink-soft); margin-top:14px; font-size:15.5px; line-height:1.6;}
+
+  .problem-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
+  .problem-card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius);
+    padding:24px; box-shadow:var(--shadow);
+    transition:transform .2s ease;
+  }
+  .problem-card:hover{transform:translateY(-3px);}
+  .problem-card .q{font-family:'Fraunces',serif; font-size:18px; font-weight:600; margin-bottom:10px;}
+  .problem-card p{font-size:14px; color:var(--ink-soft); line-height:1.55; margin:0;}
+
+  .why-band{
+    background:var(--ink); border-radius:20px; padding:52px 44px; color:var(--paper);
+  }
+  .why-band .section-head h2, .why-band .section-head p{color:var(--paper);}
+  .why-band .section-head p{color:#B9BECF;}
+  .flow{display:flex; align-items:stretch; justify-content:space-between; gap:8px; margin-top:8px;}
+  .flow-step{flex:1; text-align:center; position:relative; padding-top:8px;}
+  .flow-step .dot{
+    width:9px; height:9px; border-radius:50%; background:var(--amber);
+    margin:0 auto 14px;
+  }
+  .flow-step .t{font-family:'Fraunces',serif; font-weight:600; font-size:15px;}
+  .flow-step .d{font-size:12.5px; color:#9FA6BC; margin-top:6px; line-height:1.5;}
+  .flow-line{position:absolute; top:12px; left:-50%; width:100%; height:1px; background:#33395A; z-index:-1;}
+  .flow-step:first-child .flow-line{display:none;}
+
+  .steps-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px;}
+  .step-card{
+    border:1px solid var(--line); border-radius:var(--radius); padding:30px 26px;
+    background:var(--paper-raised); box-shadow:var(--shadow);
+  }
+  .step-num{font-family:'Fraunces',serif; font-size:38px; font-weight:600; color:var(--amber); line-height:1;}
+  .step-card h3{font-size:19px; margin-top:14px; font-weight:600;}
+  .step-card p{font-size:14px; color:var(--ink-soft); margin-top:10px; line-height:1.6;}
+
+  .human-line{
+    text-align:center; padding:56px 0; font-family:'Fraunces',serif; font-style:italic;
+    font-size:24px; color:var(--blue-deep); max-width:680px; margin:0 auto; line-height:1.5;
+  }
+
+  footer{border-top:1px solid var(--line); padding:32px 0; font-size:13px; color:var(--ink-soft);}
+  .footer-inner{display:flex; justify-content:space-between; align-items:center;}
+
+  /* PROFILE PAGE */
+  .profile-shell{
+    max-width:640px; margin:0 auto; padding:80px 32px 100px;
+  }
+  .profile-head{text-align:center; margin-bottom:40px;}
+  .profile-head h1{font-size:36px; font-weight:600;}
+  .profile-head p{color:var(--ink-soft); margin-top:12px; font-size:15px;}
+  .form-card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:18px;
+    padding:36px; box-shadow:var(--shadow);
+  }
+  .field{margin-bottom:22px;}
+  .field label{
+    display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:var(--ink);
+  }
+  .field input[type=text], .field select{
+    width:100%; padding:13px 14px; border-radius:10px; border:1px solid var(--line);
+    font-family:'Inter',sans-serif; font-size:14.5px; background:#FCFBF8; color:var(--ink);
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--blue); outline-offset:1px; border-color:var(--blue);}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .chip-select{display:flex; flex-wrap:wrap; gap:9px; margin-top:2px;}
+  .chip-opt{
+    padding:9px 15px; border-radius:999px; border:1px solid var(--line);
+    font-size:13.5px; color:var(--ink-soft); background:#FCFBF8;
+    transition:all .15s ease;
+  }
+  .chip-opt.selected{
+    background:var(--ink); color:var(--paper); border-color:var(--ink);
+  }
+  .chip-opt:hover:not(.selected){border-color:var(--blue);}
+  .privacy-note{
+    font-size:12.5px; color:var(--ink-soft); text-align:center; margin-top:16px; line-height:1.5;
+  }
+
+  /* DASHBOARD */
+  .dash-shell{max-width:1000px; margin:0 auto; padding:56px 32px 100px;}
+  .dash-header{
+    display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px; flex-wrap:wrap; gap:16px;
+  }
+  .dash-header h1{font-size:34px; font-weight:600;}
+  .dash-header p{color:var(--ink-soft); margin-top:8px; font-size:15px;}
+  .greeting{
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--blue-deep);
+    background:#EDEFF8; border:1px solid #D9DDF0; padding:7px 14px; border-radius:999px;
+  }
+  .tag-row{display:flex; gap:10px; flex-wrap:wrap; margin:20px 0 40px;}
+  .info-pill{
+    font-size:12.5px; font-family:'JetBrains Mono',monospace; color:var(--ink-soft);
+    background:var(--paper-raised); border:1px solid var(--line); padding:7px 13px; border-radius:8px;
+  }
+  .info-pill b{color:var(--ink); font-weight:600;}
+
+  .dash-section{margin-bottom:52px;}
+  .dash-section h2{font-size:24px; font-weight:600; margin-bottom:6px;}
+  .dash-section .sub{color:var(--ink-soft); font-size:14px; margin-bottom:22px;}
+
+  .priority-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .pcard{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius);
+    padding:22px; box-shadow:var(--shadow);
+  }
+  .pcard .badge{
+    display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10.5px; font-weight:600;
+    padding:4px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:0.06em;
+  }
+  .badge.high{background:var(--attn-soft); color:var(--attn);}
+  .badge.medium{background:var(--amber-soft); color:#8A6216;}
+  .pcard h3{font-size:17px; font-weight:600; margin:12px 0 6px; font-family:'Fraunces',serif;}
+  .pcard p{font-size:13.5px; color:var(--ink-soft); line-height:1.55; margin:0 0 14px;}
+  .bar-track{height:6px; border-radius:99px; background:#EDEAE0; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:99px; background:var(--ink);}
+
+  .company-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px;}
+  .company-card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius);
+    padding:22px; box-shadow:var(--shadow);
+  }
+  .company-card .top{display:flex; justify-content:space-between; align-items:center;}
+  .company-card h3{font-size:17px; font-weight:600;}
+  .demo-tag{
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--blue-deep); background:#EDEFF8; padding:3px 8px; border-radius:6px;
+  }
+  .kv{margin-top:14px; font-size:13px;}
+  .kv .k{color:var(--ink-soft); margin-bottom:4px;}
+  .kv .v{color:var(--ink); font-weight:500;}
+  .focus-tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:6px;}
+  .focus-tags span{
+    font-family:'JetBrains Mono',monospace; font-size:11px; background:#F1EEE4; padding:4px 9px; border-radius:6px; color:var(--ink-soft);
+  }
+
+  .topic-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .topic-card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px; box-shadow:var(--shadow);
+  }
+  .topic-card .rec{
+    font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--amber); text-transform:uppercase; letter-spacing:0.08em;
+  }
+  .topic-card h3{font-size:16px; font-weight:600; margin:8px 0 8px; font-family:'Fraunces',serif;}
+  .topic-card p{font-size:12.5px; color:var(--ink-soft); line-height:1.55; margin:0;}
+
+  .gap-table{
+    width:100%; border-collapse:collapse; background:var(--paper-raised); border:1px solid var(--line);
+    border-radius:var(--radius); overflow:hidden;
+  }
+  .gap-table th{
+    text-align:left; font-family:'JetBrains Mono',monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:0.06em; color:var(--ink-soft); padding:14px 20px; border-bottom:1px solid var(--line);
+  }
+  .gap-table td{padding:16px 20px; border-bottom:1px solid var(--line); font-size:14.5px;}
+  .gap-table tr:last-child td{border-bottom:none;}
+  .status-pill{
+    font-size:12px; font-weight:600; padding:5px 12px; border-radius:999px; display:inline-block;
+  }
+  .status-pill.attn{background:var(--attn-soft); color:var(--attn);}
+  .status-pill.good{background:var(--good-soft); color:var(--good);}
+
+  .plan-track{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  .plan-week{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius); padding:20px;
+    box-shadow:var(--shadow); position:relative;
+  }
+  .plan-week .wk{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--blue-deep); margin-bottom:8px; display:block;
+  }
+  .plan-week h3{font-size:15.5px; font-weight:600; font-family:'Fraunces',serif;}
+
+  .dash-cta{
+    text-align:center; padding:44px; border-radius:18px; background:var(--ink); color:var(--paper); margin-top:16px;
+  }
+  .dash-cta p{font-family:'Fraunces',serif; font-style:italic; color:#B9BECF; margin:0 0 20px; font-size:16px;}
+
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .pattern-stage{height:320px; margin-top:20px;}
+    .hero h1{font-size:38px;}
+    .problem-grid,.priority-grid,.company-grid,.topic-grid,.steps-grid,.plan-track{grid-template-columns:1fr 1fr;}
+    .flow{flex-direction:column; gap:22px;}
+    .flow-line{display:none;}
+    .field-row{grid-template-columns:1fr;}
+    .nav-links{display:none;}
+  }
+  @media (max-width:560px){
+    .problem-grid,.priority-grid,.company-grid,.topic-grid,.steps-grid,.plan-track{grid-template-columns:1fr;}
+    .wrap{padding:0 20px;}
+    .hero h1{font-size:32px;}
+  }
+</style>
 </head>
 <body>
-    <p>This is our projbkjzcjkdscksdcuiguiduigcskzvgdskzigucivdfgucvzgdugvhdsfvdmcaskj.cagufguiegqfiuegiufeiueaugccgdzcdscaduect</p>
-    <a href="https://www.pw.live/">PW</a>
-    <image src="https://m.media-amazon.com/images/M/MV5BMjEzMjA0ODk1OF5BMl5BanBnXkFtZTcwMTA4ODM3OQ@@._V1_.jpg" height="100"></image>
+
+<!-- ================= LANDING VIEW ================= -->
+<div id="view-landing" class="view active">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="logo"><span class="logo-mark"></span>ELate</div>
+      <div class="nav-links">
+        <a href="#how-it-works">How it works</a>
+        <a href="#why-elate">Why ELate?</a>
+        <a href="#about">About</a>
+      </div>
+      <button class="btn btn-primary" onclick="goTo('profile')">Get Started</button>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">● Built by students, for students</span>
+        <h1>Crack the pattern<br>behind every placement.</h1>
+        <div class="sub">Prepare for what actually matters.</div>
+        <p class="desc">Learn from real placement experiences, discover recurring interview patterns, identify skill gaps, and focus your preparation where it counts.</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" onclick="goTo('profile')">Click here to continue →</button>
+        </div>
+        <p class="hero-note">Your placement journey starts with understanding the pattern.</p>
+      </div>
+
+      <div class="pattern-stage" id="pattern-stage">
+        <svg class="pattern-svg" id="pattern-lines" viewBox="0 0 460 420"></svg>
+        <div class="pattern-center">
+          <div class="label">Synthesized</div>
+          <div class="title">Placement<br>Pattern</div>
+        </div>
+        <!-- chips injected by JS -->
+      </div>
+    </div>
+  </header>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">The problem</span>
+        <h2>Placement preparation shouldn't be a guessing game.</h2>
+      </div>
+      <div class="problem-grid">
+        <div class="problem-card">
+          <div class="q">"What should I prepare?"</div>
+          <p>Students often don't know which skills deserve the most attention.</p>
+        </div>
+        <div class="problem-card">
+          <div class="q">"What actually gets asked?"</div>
+          <p>Interview questions and assessment patterns are scattered across different sources.</p>
+        </div>
+        <div class="problem-card">
+          <div class="q">"Where am I falling behind?"</div>
+          <p>Students struggle to identify their actual skill gaps.</p>
+        </div>
+        <div class="problem-card">
+          <div class="q">"What worked for others?"</div>
+          <p>Useful placement experiences are often lost after the recruitment process.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="why-elate">
+    <div class="wrap">
+      <div class="why-band">
+        <div class="section-head">
+          <span class="kicker" style="color:#9FA6BC;">Why ELate?</span>
+          <h2>From scattered experiences to smarter preparation.</h2>
+          <p>Every stage strips away noise, until only what matters for your prep is left.</p>
+        </div>
+        <div class="flow">
+          <div class="flow-step"><div class="flow-line"></div><div class="dot"></div><div class="t">Student Experiences</div><div class="d">Real rounds, shared after the fact.</div></div>
+          <div class="flow-step"><div class="flow-line"></div><div class="dot"></div><div class="t">Pattern Detection</div><div class="d">Recurring topics surface on their own.</div></div>
+          <div class="flow-step"><div class="flow-line"></div><div class="dot"></div><div class="t">Company Insights</div><div class="d">What each recruiter tends to test.</div></div>
+          <div class="flow-step"><div class="flow-line"></div><div class="dot"></div><div class="t">Skill Gap Analysis</div><div class="d">Where your prep is thin.</div></div>
+          <div class="flow-step"><div class="flow-line"></div><div class="dot"></div><div class="t">Personalized Preparation</div><div class="d">A plan built around you.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="kicker">How it works</span>
+        <h2>Three steps between you and a clear plan.</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3>Tell us about you</h3>
+          <p>Enter your branch, year, college, target role and preferred companies.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3>We find the patterns</h3>
+          <p>ELate analyzes placement experiences and identifies recurring skills, questions, rounds and selection patterns.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3>Prepare with direction</h3>
+          <p>Get personalized insights into what to focus on instead of preparing blindly.</p>
+        </div>
+      </div>
+      <div style="text-align:center; margin-top:36px;">
+        <button class="btn btn-primary" onclick="goTo('profile')">Start Your Journey →</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="human-line">"You don't need to prepare everything. You need to prepare what matters."</div>
+  </div>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <div class="logo" style="font-size:16px;"><span class="logo-mark"></span>ELate</div>
+      <div>Made for a college hackathon — patterns, not guesswork.</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ================= PROFILE VIEW ================= -->
+<div id="view-profile" class="view">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="logo" style="cursor:pointer;" onclick="goTo('landing')"><span class="logo-mark"></span>ELate</div>
+      <button class="btn btn-ghost" onclick="goTo('landing')">← Back</button>
+    </div>
+  </nav>
+  <div class="profile-shell">
+    <div class="profile-head">
+      <h1>Let's understand your placement goal.</h1>
+      <p>A little about you helps ELate find the most relevant placement patterns.</p>
+    </div>
+    <div class="form-card">
+      <div class="field">
+        <label>Student Name</label>
+        <input type="text" id="f-name" placeholder="Enter your name">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Branch</label>
+          <select id="f-branch">
+            <option>Computer Science & Engineering</option>
+            <option>Information Technology</option>
+            <option>Electronics & Communication</option>
+            <option>Electrical Engineering</option>
+            <option>Mechanical Engineering</option>
+            <option>Civil Engineering</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Year</label>
+          <select id="f-year">
+            <option>1st Year</option>
+            <option>2nd Year</option>
+            <option>3rd Year</option>
+            <option selected>4th Year</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>College</label>
+        <input type="text" id="f-college" placeholder="Enter your college">
+      </div>
+      <div class="field">
+        <label>Target Role</label>
+        <select id="f-role">
+          <option>Software Developer</option>
+          <option>Data Analyst</option>
+          <option>Data Scientist</option>
+          <option>AI/ML Engineer</option>
+          <option>Web Developer</option>
+          <option>Backend Developer</option>
+          <option>Frontend Developer</option>
+          <option>Core Engineering</option>
+          <option>Product Management</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Preferred Companies <span style="font-weight:400; color:var(--ink-soft);">— select any, or type your own</span></label>
+        <div class="chip-select" id="company-chips">
+          <button type="button" class="chip-opt" data-company="Google">Google</button>
+          <button type="button" class="chip-opt" data-company="Microsoft">Microsoft</button>
+          <button type="button" class="chip-opt" data-company="Amazon">Amazon</button>
+          <button type="button" class="chip-opt" data-company="TCS">TCS</button>
+          <button type="button" class="chip-opt" data-company="Infosys">Infosys</button>
+          <button type="button" class="chip-opt" data-company="Accenture">Accenture</button>
+          <button type="button" class="chip-opt" data-company="Deloitte">Deloitte</button>
+          <button type="button" class="chip-opt" data-company="Wipro">Wipro</button>
+        </div>
+        <div style="margin-top:12px;">
+          <input type="text" id="f-company-other" placeholder="Type another company and press Enter">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="generateDashboard()">Generate My Placement Insights →</button>
+      <p class="privacy-note">Your personal information stays private. ELate focuses on patterns, not identities.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= DASHBOARD VIEW ================= -->
+<div id="view-dashboard" class="view">
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="logo" style="cursor:pointer;" onclick="goTo('landing')"><span class="logo-mark"></span>ELate</div>
+      <button class="btn btn-ghost" onclick="goTo('landing')">← Start over</button>
+    </div>
+  </nav>
+
+  <div class="dash-shell">
+    <div class="dash-header">
+      <div>
+        <h1>Your Placement Pattern</h1>
+        <p>Here's what candidates targeting your role should focus on.</p>
+      </div>
+      <div class="greeting" id="dash-greeting">Hi there 👋</div>
+    </div>
+    <div class="tag-row" id="dash-tags"></div>
+
+    <div class="dash-section">
+      <h2>What should you prepare first?</h2>
+      <div class="sub">Preparation priority, based on demo placement experiences.</div>
+      <div class="priority-grid">
+        <div class="pcard">
+          <span class="badge high">High priority</span>
+          <h3>Data Structures & Algorithms</h3>
+          <p>Frequently associated with technical screening and interviews.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:88%;"></div></div>
+        </div>
+        <div class="pcard">
+          <span class="badge high">High priority</span>
+          <h3>Problem Solving</h3>
+          <p>Common across coding assessments and technical rounds.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:82%;"></div></div>
+        </div>
+        <div class="pcard">
+          <span class="badge medium">Medium priority</span>
+          <h3>Core CS Fundamentals</h3>
+          <p>DBMS, Operating Systems, Computer Networks.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:58%;"></div></div>
+        </div>
+        <div class="pcard">
+          <span class="badge medium">Medium priority</span>
+          <h3>Projects</h3>
+          <p>Important for resume discussions and technical interviews.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:52%;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2>What companies are looking for</h2>
+      <div class="sub">Demo Insight — illustrative patterns, not real hiring statistics.</div>
+      <div class="company-grid" id="dash-companies"></div>
+    </div>
+
+    <div class="dash-section">
+      <h2>Questions that keep coming back</h2>
+      <div class="sub">Recurring topics across shared placement experiences.</div>
+      <div class="topic-grid">
+        <div class="topic-card">
+          <span class="rec">Recurring topic</span>
+          <h3>DSA</h3>
+          <p>Arrays • Strings • Linked Lists • Trees</p>
+        </div>
+        <div class="topic-card">
+          <span class="rec">Recurring topic</span>
+          <h3>DBMS</h3>
+          <p>SQL • Normalization • Joins • Transactions</p>
+        </div>
+        <div class="topic-card">
+          <span class="rec">Recurring topic</span>
+          <h3>OOP</h3>
+          <p>Inheritance • Polymorphism • Encapsulation</p>
+        </div>
+        <div class="topic-card">
+          <span class="rec">Recurring topic</span>
+          <h3>Projects</h3>
+          <p>Architecture • Challenges • Your contribution</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <h2>Where should you improve?</h2>
+      <div class="sub">Areas worth strengthening — not a scorecard, just a starting point.</div>
+      <table class="gap-table">
+        <thead>
+          <tr><th>Skill</th><th>Current focus</th><th>Placement relevance</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>DSA</td><td><span class="status-pill attn">Worth strengthening</span></td><td>High</td></tr>
+          <tr><td>SQL</td><td><span class="status-pill good">Good</span></td><td>Medium</td></tr>
+          <tr><td>Projects</td><td><span class="status-pill attn">Worth strengthening</span></td><td>High</td></tr>
+          <tr><td>Communication</td><td><span class="status-pill good">Good</span></td><td>Medium</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dash-section">
+      <h2>Your next 30 days</h2>
+      <div class="sub">A practical roadmap, one week at a time.</div>
+      <div class="plan-track">
+        <div class="plan-week"><span class="wk">Week 1</span><h3>Strengthen fundamentals</h3></div>
+        <div class="plan-week"><span class="wk">Week 2</span><h3>Practice recurring OA patterns</h3></div>
+        <div class="plan-week"><span class="wk">Week 3</span><h3>Mock technical interviews</h3></div>
+        <div class="plan-week"><span class="wk">Week 4</span><h3>Company-focused preparation</h3></div>
+      </div>
+      <div class="dash-cta">
+        <p>"Someone has already faced the interview. Learn from their experience."</p>
+        <button class="btn btn-primary">Build My Preparation Plan →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- view switching ----------
+  function goTo(view){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+view).classList.add('active');
+    window.scrollTo({top:0, behavior:'instant'});
+    if(view === 'landing'){ setTimeout(buildPattern, 50); }
+  }
+
+  // ---------- hero pattern visual ----------
+  function buildPattern(){
+    const stage = document.getElementById('pattern-stage');
+    const svg = document.getElementById('pattern-lines');
+    svg.querySelectorAll('.dyn').forEach(e=>e.remove());
+    stage.querySelectorAll('.chip').forEach(e=>e.remove());
+
+    const tags = ['DSA','SQL','Aptitude','Projects','HR Round','System Design','Communication'];
+    const positions = [
+      {top:'2%', left:'4%'},
+      {top:'0%', left:'62%'},
+      {top:'22%', left:'80%'},
+      {top:'46%', left:'2%'},
+      {top:'68%', left:'70%'},
+      {top:'80%', left:'12%'},
+      {top:'86%', left:'46%'}
+    ];
+    const centerX = 230, centerY = 210;
+
+    tags.forEach((t,i)=>{
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.style.top = positions[i].top;
+      chip.style.left = positions[i].left;
+      chip.style.animationDelay = (0.1 + i*0.09) + 's';
+      chip.textContent = t;
+      stage.appendChild(chip);
+
+      // approximate chip center in the 460x420 viewbox coordinate space
+      const px = (parseFloat(positions[i].left)/100)*460 + 40;
+      const py = (parseFloat(positions[i].top)/100)*420 + 14;
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('class','dyn');
+      line.setAttribute('x1', px);
+      line.setAttribute('y1', py);
+      line.setAttribute('x2', centerX);
+      line.setAttribute('y2', centerY);
+      line.style.animationDelay = (0.5 + i*0.07) + 's';
+      svg.appendChild(line);
+    });
+  }
+  buildPattern();
+
+  // ---------- profile form ----------
+  const selectedCompanies = new Set();
+  document.querySelectorAll('.chip-opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const c = btn.dataset.company;
+      if(selectedCompanies.has(c)){ selectedCompanies.delete(c); btn.classList.remove('selected'); }
+      else { selectedCompanies.add(c); btn.classList.add('selected'); }
+    });
+  });
+  document.getElementById('f-company-other').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      const val = e.target.value.trim();
+      if(val && !selectedCompanies.has(val)){
+        selectedCompanies.add(val);
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip-opt selected';
+        chip.dataset.company = val;
+        chip.textContent = val;
+        chip.addEventListener('click', ()=>{
+          selectedCompanies.delete(val);
+          chip.remove();
+        });
+        document.getElementById('company-chips').appendChild(chip);
+      }
+      e.target.value = '';
+    }
+  });
+
+  // ---------- demo insight data per company ----------
+  const companyPatterns = {
+    'Google':{pattern:'Technical + HR', focus:['DSA','System Design','CS Fundamentals']},
+    'Microsoft':{pattern:'Multiple Technical Rounds', focus:['DSA','Projects','CS Fundamentals']},
+    'Amazon':{pattern:'OA + Technical Interview', focus:['DSA','Aptitude','Projects']},
+    'TCS':{pattern:'OA + HR', focus:['Aptitude','SQL','CS Fundamentals']},
+    'Infosys':{pattern:'OA + Technical Interview', focus:['Aptitude','SQL','CS Fundamentals']},
+    'Accenture':{pattern:'OA + HR', focus:['Aptitude','Communication','Projects']},
+    'Deloitte':{pattern:'Technical + HR', focus:['SQL','CS Fundamentals','Communication']},
+    'Wipro':{pattern:'OA + Technical Interview', focus:['Aptitude','SQL','DSA']}
+  };
+  function defaultPattern(){ return {pattern:'Technical + HR', focus:['DSA','Aptitude','Projects']}; }
+
+  // ---------- dashboard generation ----------
+  function generateDashboard(){
+    const name = document.getElementById('f-name').value.trim() || 'there';
+    const branch = document.getElementById('f-branch').value;
+    const year = document.getElementById('f-year').value;
+    const college = document.getElementById('f-college').value.trim() || 'your college';
+    const role = document.getElementById('f-role').value;
+    let companies = Array.from(selectedCompanies);
+    if(companies.length === 0){ companies = ['Google','TCS','Amazon']; }
+    companies = companies.slice(0,4);
+
+    document.getElementById('dash-greeting').textContent = 'Hi, ' + name + ' 👋';
+    document.getElementById('dash-tags').innerHTML = `
+      <div class="info-pill"><b>Branch:</b> ${branch}</div>
+      <div class="info-pill"><b>Year:</b> ${year}</div>
+      <div class="info-pill"><b>College:</b> ${college}</div>
+      <div class="info-pill"><b>Target role:</b> ${role}</div>
+    `;
+
+    const companyGrid = document.getElementById('dash-companies');
+    companyGrid.innerHTML = companies.map(c=>{
+      const d = companyPatterns[c] || defaultPattern();
+      return `
+        <div class="company-card">
+          <div class="top">
+            <h3>${c}</h3>
+            <span class="demo-tag">Demo Insight</span>
+          </div>
+          <div class="kv">
+            <div class="k">Hiring pattern</div>
+            <div class="v">${d.pattern}</div>
+          </div>
+          <div class="kv" style="margin-top:12px;">
+            <div class="k">Common focus</div>
+            <div class="focus-tags">${d.focus.map(f=>`<span>${f}</span>`).join('')}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    goTo('dashboard');
+  }
+</script>
 </body>
 </html>
