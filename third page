@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opportunity Discovery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .search-bar input {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            min-width: 200px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar button {
+            padding: 12px 30px;
+            background-color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .opportunities {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .opportunity-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .opportunity-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: white;
+        }
+
+        .company-name {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .role {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .match-score {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background-color: #667eea;
+            border-radius: 50%;
+        }
+
+        .skills-list,
+        .eligibility-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .tag.required {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #1976d2;
+        }
+
+        .tag.nice-to-have {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .eligibility-text {
+            color: #555;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .match-details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .match-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .match-label {
+            font-weight: 600;
+            color: #333;
+            min-width: 80px;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+        }
+
+        .percentage {
+            font-weight: 700;
+            color: #667eea;
+            min-width: 40px;
+            text-align: right;
+            font-size: 0.9em;
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 10px;
+            padding: 15px 20px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .btn-view {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background-color: #764ba2;
+        }
+
+        .btn-save {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 2px solid #667eea;
+        }
+
+        .btn-save:hover {
+            background-color: #e8e8e8;
+        }
+
+        .no-opportunities {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .opportunities {
+                grid-template-columns: 1fr;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-bar input {
+                min-width: 100%;
+            }
+
+            .card-footer {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Opportunity Discovery</h1>
+            <p>Find the perfect role that matches your skills and career goals</p>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search by role, company, or skill..." id="searchInput">
+            <button onclick="searchOpportunities()">Search</button>
+        </div>
+
+        <div class="opportunities">
+            <!-- Opportunity Card 1 -->
+            <div class="opportunity-card">
+                <div class="card-header">
+                    <div class="company-name">Google</div>
+                    <div class="role">Software Engineer</div>
+                    <div class="match-score">95% Match</div>
+                </div>
+                <div class="card-content">
+                    <!-- Role Section -->
+                    <div class="section">
+                        <div class="section-title">Role</div>
+                        <p style="color: #555; line-height: 1.6; font-size: 0.95em;">
+                            Backend Software Engineer with focus on scalable systems and cloud infrastructure development.
+                        </p>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="section">
+                        <div class="section-title">Skills Required</div>
+                        <div class="skills-list">
+                            <span class="tag required">Java</span>
+                            <span class="tag required">Python</span>
+                            <span class="tag required">Cloud Computing</span>
+                            <span class="tag nice-to-have">Kubernetes</span>
+                            <span class="tag nice-to-have">gRPC</span>
+                        </div>
+                    </div>
+
+                    <!-- Eligibility Criteria Section -->
+                    <div class="section">
+                        <div class="section-title">Eligibility Criteria</div>
+                        <div class="eligibility-text">
+                            <ul style="margin-left: 20px; line-height: 1.8;">
+                                <li>B.Tech / M.Tech in Computer Science</li>
+                                <li>CGPA ≥ 7.0</li>
+                                <li>0-2 years of experience</li>
+                                <li>Strong problem-solving skills</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Match Section -->
+                    <div class="section">
+                        <div class="section-title">Your Match</div>
+                        <div class="match-details">
+                            <div class="match-bar">
+                                <div class="match-label">Skills</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 95%;"></div>
+                                </div>
+                                <div class="percentage">95%</div>
+                            </div>
+                            <div class="match-bar">
+                                <div class="match-label">Eligibility</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 90%;"></div>
+                                </div>
+                                <div class="percentage">90%</div>
+                            </div>
+                            <div class="match-bar">
+                                <div class="match-label">Experience</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%;"></div>
+                                </div>
+                                <div class="percentage">75%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-view">View Details</button>
+                    <button class="btn btn-save">Save</button>
+                </div>
+            </div>
+
+            <!-- Opportunity Card 2 -->
+            <div class="opportunity-card">
+                <div class="card-header">
+                    <div class="company-name">Microsoft</div>
+                    <div class="role">Data Analyst</div>
+                    <div class="match-score">88% Match</div>
+                </div>
+                <div class="card-content">
+                    <!-- Role Section -->
+                    <div class="section">
+                        <div class="section-title">Role</div>
+                        <p style="color: #555; line-height: 1.6; font-size: 0.95em;">
+                            Data Analyst focused on business intelligence and analytics platform development.
+                        </p>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="section">
+                        <div class="section-title">Skills Required</div>
+                        <div class="skills-list">
+                            <span class="tag required">SQL</span>
+                            <span class="tag required">Python</span>
+                            <span class="tag required">Power BI</span>
+                            <span class="tag nice-to-have">Tableau</span>
+                            <span class="tag nice-to-have">Excel VBA</span>
+                        </div>
+                    </div>
+
+                    <!-- Eligibility Criteria Section -->
+                    <div class="section">
+                        <div class="section-title">Eligibility Criteria</div>
+                        <div class="eligibility-text">
+                            <ul style="margin-left: 20px; line-height: 1.8;">
+                                <li>Bachelor's degree in any stream</li>
+                                <li>CGPA ≥ 6.5</li>
+                                <li>Strong analytical skills</li>
+                                <li>Data visualization expertise</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Match Section -->
+                    <div class="section">
+                        <div class="section-title">Your Match</div>
+                        <div class="match-details">
+                            <div class="match-bar">
+                                <div class="match-label">Skills</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 88%;"></div>
+                                </div>
+                                <div class="percentage">88%</div>
+                            </div>
+                            <div class="match-bar">
+                                <div class="match-label">Eligibility</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 92%;"></div>
+                                </div>
+                                <div class="percentage">92%</div>
+                            </div>
+                            <div class="match-bar">
+                                <div class="match-label">Experience</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%;"></div>
+                                </div>
+                                <div class="percentage">70%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-view">View Details</button>
+                    <button class="btn btn-save">Save</button>
+                </div>
+            </div>
+
+            <!-- Opportunity Card 3 -->
+            <div class="opportunity-card">
+                <div class="card-header">
+                    <div class="company-name">Amazon</div>
+                    <div class="role">Product Manager</div>
+                    <div class="match-score">82% Match</div>
+                </div>
+                <div class="card-content">
+                    <!-- Role Section -->
+                    <div class="section">
+                        <div class="section-title">Role</div>
+                        <p style="color: #555; line-height: 1.6; font-size: 0.95em;">
+                            Associate Product Manager responsible for product strategy and roadmap development.
+                        </p>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="section">
+                        <div class="section-title">Skills Required</div>
+                        <div class="skills-list">
+                            <span class="tag required">Product Strategy</span>
+                            <span class="tag required">Data Analysis</span>
+                            <span class="tag required">Communication</span>
+                            <span class="tag nice-to-have">UX Design</span>
+                            <span class="tag nice-to-have">Agile</span>
+                        </div>
+                    </div>
+
+                    <!-- Eligibility Criteria Section -->
+                    <div class="section">
+                        <div class="section-title">Eligibility Criteria</div>
+                        <div class="eligibility-text">
+                            <ul style="margin-left: 20px; line-height: 1.8;">
+                                <li>Bachelor's degree from any field</li>
+                                <li>CGPA ≥ 7.0</li>
+                                <li>Leadership experience preferred</li>
+                                <li>Excellent communication skills</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Match Section -->
+                    <div class="section">
+                        <div class="section-title">Your Match</div>
+                        <div class="match-details">
+                            <div class="match-bar">
+                                <div class="match-label">Skills</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 82%;"></div>
+                                </div>
+                                <div class="percentage">82%</div>
+                            </div>
+                            <div class="match-bar">
+                                <div class="match-label">Eligibility</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%;"></div>
+                                </div>
+                                <div class="percentage">85%</div>
+                            </div>
+                            <div class="match-bar">
+                                <div class="match-label">Experience</div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 72%;"></div>
+                                </div>
+                                <div class="percentage">72%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-view">View Details</button>
+                    <button class="btn btn-save">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function searchOpportunities() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.opportunity-card');
+            
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(searchTerm) || searchTerm === '') {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Allow Enter key to search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchOpportunities();
+            }
+        });
+    </script>
+</body>
+</html>
